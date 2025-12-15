@@ -1,6 +1,5 @@
 <?php
 // login.php - System Access and Authentication
-// Handles form submission and securely verifies user credentials against the database.
 
 // Start the session at the very beginning of the script
 session_start();
@@ -14,21 +13,20 @@ if (isset($_SESSION["loggedin"]) && $_SESSION["loggedin"] === true) {
 // Include the central configuration and database connection
 require_once 'config.php';
 
-// Initialize variables
 $username = $password = "";
 $username_err = $password_err = $login_err = "";
 
-// Process form data when the form is submitted
+// Process form data when the form is submitted (Authentication logic remains the same)
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
-    // 1. Validate username input
+    // 1. Validate username
     if (empty(trim($_POST["username"]))) {
         $username_err = "Please enter username.";
     } else {
         $username = trim($_POST["username"]);
     }
 
-    // 2. Validate password input
+    // 2. Validate password
     if (empty(trim($_POST["password"]))) {
         $password_err = "Please enter your password.";
     } else {
@@ -38,27 +36,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // 3. Check credentials only if inputs are valid
     if (empty($username_err) && empty($password_err)) {
         
-        // Prepare a SELECT statement to fetch user data
-        // Using '?' as a placeholder to prevent SQL Injection
         $sql = "SELECT id, username, password FROM users WHERE username = ?";
         
         if ($stmt = mysqli_prepare($conn, $sql)) {
-            
-            // Bind the username variable to the prepared statement as a string parameter ("s")
             mysqli_stmt_bind_param($stmt, "s", $param_username);
             $param_username = $username;
             
-            // Attempt to execute the prepared statement
             if (mysqli_stmt_execute($stmt)) {
                 mysqli_stmt_store_result($stmt);
                 
-                // Check if username exists (should be exactly 1 row)
                 if (mysqli_stmt_num_rows($stmt) == 1) {                    
-                    
-                    // Bind the result columns to PHP variables
                     mysqli_stmt_bind_result($stmt, $id, $username, $hashed_password);
                     if (mysqli_stmt_fetch($stmt)) {
-                        
                         // Verify the submitted password against the stored hash
                         if (password_verify($password, $hashed_password)) {
                             
@@ -71,26 +60,21 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                             exit;
 
                         } else {
-                            // Incorrect password
                             $login_err = "Invalid username or password.";
                         }
                     }
                 } else {
-                    // Username doesn't exist
                     $login_err = "Invalid username or password.";
                 }
             } else {
-                // Database execution error
                 $login_err = "ERROR: System failure during authentication. Please retry.";
                 error_log("Login DB Execution Error: " . mysqli_error($conn));
             }
 
-            // Close statement
             mysqli_stmt_close($stmt);
         }
     }
     
-    // Close connection (only if it hasn't been closed by the redirect)
     if (isset($conn)) {
         mysqli_close($conn);
     }
@@ -118,7 +102,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             color: var(--secondary-accent);
         }
         
-        /* Centered Login Container */
         .login-container {
             display: flex;
             flex-direction: column;
@@ -177,28 +160,55 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
         }
 
-        .btn-primary {
-            width: 100%;
-            background-color: var(--primary-accent);
-            color: var(--background-dark);
-            padding: 15px;
+        /* Styling for the button group */
+        .button-group {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .btn-primary, .btn-secondary {
+            padding: 15px 10px;
             text-decoration: none;
             font-weight: bold;
             border: none;
             border-radius: 2px;
-            font-size: 18px;
+            font-size: 16px;
             cursor: pointer;
             transition: background-color 0.3s, transform 0.3s;
+            flex-grow: 1; /* Makes buttons share space equally */
+            text-align: center;
+        }
+
+        /* Login Button (Primary Action - Gold) */
+        .btn-primary {
+            background-color: var(--primary-accent);
+            color: var(--background-dark);
         }
 
         .btn-primary:hover {
             background-color: #fff;
-            transform: scale(1.01);
+            transform: scale(1.03);
             color: var(--background-dark);
         }
 
+        /* Register Button (Secondary Action - Dark/Outline) */
+        .btn-secondary {
+            background-color: transparent;
+            color: var(--primary-accent);
+            border: 2px solid var(--primary-accent);
+        }
+
+        .btn-secondary:hover {
+            background-color: var(--primary-accent);
+            color: var(--background-dark);
+            transform: scale(1.03);
+        }
+
+
         .alert-danger {
-            color: #ff6347; /* Error Red */
+            color: #ff6347;
             background-color: rgba(255, 99, 71, 0.1);
             border: 1px solid #ff6347;
             padding: 10px;
@@ -239,7 +249,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <h2>SYSTEM ACCESS REQUIRED</h2>
 
             <?php 
-            // Display login error if set
             if(!empty($login_err)){
                 echo '<div class="alert-danger">[ACCESS DENIED] ' . $login_err . '</div>';
             }        
@@ -258,8 +267,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     <span class="help-block"><?php echo $password_err; ?></span>
                 </div>
                 
-                <div class="form-group">
-                    <input type="submit" class="btn-primary" value="INITIATE LOGIN PROTOCOL">
+                <div class="button-group">
+                    <input type="submit" class="btn-primary" value="LOG IN">
+                    <a href="register.php" class="btn-secondary">REGISTER</a>
                 </div>
             </form>
             
