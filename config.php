@@ -1,18 +1,20 @@
 <?php
-// config.php - Central configuration file for Railway MySQL database connection
+// config.php - Central configuration file with hardcoded credentials
 
-// --- Database Credentials (Using Railway Environment Variables) ---
-define('DB_SERVER', '{{RAILWAY_PRIVATE_DOMAIN}}'); // Use the internal host variable
-define('DB_USERNAME', 'root');
-define('DB_PASSWORD', 'TzoChNMWXUjSYoqfnhgZxXhNPzSLjmVy'); // The actual root password provided
-define('DB_NAME', 'railway'); // The database name
+// --- Database Credentials (Hardcoded from your previous input) ---
+define('DB_SERVER',   'bbxadela8k44zpsqtbcx-mysql.services.clever-cloud.com'); 
+define('DB_USERNAME', 'uwmi4721ekceqwhr');
+define('DB_PASSWORD', 'HxYCSsUt0awQIr20dVTz'); 
+define('DB_NAME',     'bbxadela8k44zpsqtbcx'); 
+define('DB_PORT',     '3306'); 
 
 // --- Attempt to connect to MySQL database ---
-$conn = mysqli_connect(DB_SERVER, DB_USERNAME, DB_PASSWORD, DB_NAME);
+// Uses the constants defined above
+$conn = mysqli_connect(DB_SERVER, DB_USERNAME, DB_PASSWORD, DB_NAME, DB_PORT);
 
 // Check connection
 if ($conn === false) {
-    // Log the error (and hide the details from the public)
+    // Log the error and hide the details from the public
     error_log("Database Connection Error: " . mysqli_connect_error());
     die("ERROR: The system is currently undergoing maintenance. Please try again shortly.");
 }
